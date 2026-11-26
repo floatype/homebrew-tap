@@ -1,0 +1,53 @@
+name: Bump the cask
+# Points Casks/floatype.rb at floatype's latest published release. Runs here,
+# with this repository's own token, so that floatype needs no token for it.
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bump
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Read the latest release and update the cask
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          # floatype-0.1.15+mozc.3.35.6354.pkg
+          name=$(gh release view -R floatype/floatype --json assets \
+            --jq '[.assets[].name | select(test("^floatype-[0-9.]+\\+mozc\\.[0-9.]+\\.pkg$"))][0]')
+          floatype=$(echo "$name" | sed -E 's/^floatype-([0-9.]+)\+mozc\.([0-9.]+)\.pkg$/\1/')
+          mozc=$(echo "$name" | sed -E 's/^floatype-([0-9.]+)\+mozc\.([0-9.]+)\.pkg$/\2/')
+          case "$floatype,$mozc" in
+            [0-9]*.[0-9]*.[0-9]*,[0-9]*.[0-9]*.[0-9]*) ;;
+            *) echo "::error::cannot read the version from '$name'"; exit 1 ;;
+          esac
+          if grep -q "version \"$floatype,$mozc\"" Casks/floatype.rb; then
+            echo "already $floatype,$mozc"
+            exit 0
+          fi
+          gh release download -R floatype/floatype --pattern "$name" --pattern "$name.sha256" --dir dl
+          (cd dl && shasum -a 256 -c "$name.sha256")
+          sha=$(cut -d' ' -f1 "dl/$name.sha256")
+          sed -i -E \
+            -e "s/^  version \".*\"$/  version \"$floatype,$mozc\"/" \
+            -e "s/^  sha256 \".*\"$/  sha256 \"$sha\"/" \
+            Casks/floatype.rb
+          git diff --stat
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore(cask): update floatype to $floatype"
+          git push
