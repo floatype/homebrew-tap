@@ -25,6 +25,9 @@ cask "floatype" do
     そのあと、システム設定 → キーボード → 入力ソース の「編集…」で「＋」を押し、
     日本語の「Floatype」を足します。
 
+    brew upgrade のあとも、ログアウトしてログインし直してください。
+    それまでは入力メニューから Floatype が消えることがあります。
+
     brew uninstall しても、設定と学習（~/.config/floatype と
     ~/Library/Application Support/floatype）は残ります。
   EOS
