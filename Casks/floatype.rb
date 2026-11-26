@@ -1,6 +1,6 @@
 cask "floatype" do
-  version "0.1.15,3.35.6354"
-  sha256 "787e2f644356001f6c7472c22b8c5a6b1f9e09be33eb5e5a5227d63f40e183ac"
+  version "0.1.16,3.35.6354"
+  sha256 "888592b55e607f1045d546c4324affe8b81d0c9a59c26e5671dcd479e0500970"
 
   url "https://github.com/floatype/floatype/releases/download/v#{version.csv.first}/floatype-#{version.csv.first}+mozc.#{version.csv.second}.pkg"
   name "Floatype"
