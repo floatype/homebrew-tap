@@ -8,7 +8,7 @@ cask "floatype" do
   homepage "https://github.com/floatype/floatype"
 
   depends_on arch: :arm64
-  depends_on macos: ">= :monterey"
+  depends_on macos: :monterey
 
   pkg "floatype-#{version.csv.first}+mozc.#{version.csv.second}.pkg"
 
